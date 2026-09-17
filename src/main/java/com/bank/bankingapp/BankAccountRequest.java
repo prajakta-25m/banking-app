@@ -31,6 +31,9 @@ public class BankAccountRequest {
     public void setBalance(double balance){
         this.balance=balance;
     }
-
+//hello practicing the github switch command
+    // check uusing git branch
+    // then when we want new  git branch type git switch -c
+    //-c means create and then the name
 
 }
