@@ -1,0 +1,45 @@
+name: Banking App CD
+
+on:
+  workflow_run:
+    workflows: ["Banking App CI"]
+    types:
+      - completed
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build the JAR file
+        run: mvn clean package -DskipTests
+
+      - name: Create the Docker Image
+        run: docker build -t banking-app:1.0 .
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag Docker image for GHCR
+        run: docker tag banking-app:1.0 ghcr.io/${{ github.repository_owner }}/banking-app:1.0
+
+      - name: Push Docker image
+        run: docker push ghcr.io/${{ github.repository_owner }}/banking-app:1.0
