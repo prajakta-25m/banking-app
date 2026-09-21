@@ -43,3 +43,17 @@ jobs:
 
       - name: Push Docker image
         run: docker push ghcr.io/${{ github.repository_owner }}/banking-app:1.0
+
+  deploy:
+    runs-on: self-hosted
+    needs: docker-build
+    steps:
+      - name: Pull Docker image
+        run: docker pull ghcr.io/${{ github.repository_owner }}/banking-app:1.0
+
+      - name: Run Docker container
+        run: |
+            docker rm -f banking-app 2>$null
+            docker run -d --name banking-app -p 8080:8080 -e DB_HOST=host.docker.internal ghcr.io/${{ github.repository_owner }}/banking-app:1.0
+
+
